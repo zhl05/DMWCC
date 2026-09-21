@@ -75,6 +75,3 @@ All experiment parameters are YAML files under `scripts/configs/`. `domain_adapt
 
 The default random seed is `1234` (`TRAIN.RANDOM_SEED`). Training seeds Python `random`, NumPy, PyTorch CPU, and all CUDA devices; dataloader worker seeds are derived as `1234 + worker_id`. CUDA deterministic mode is not enabled in the current implementation, so minor run-to-run variation may remain. To require deterministic CUDA kernels, set `torch.backends.cudnn.deterministic = True` and `torch.backends.cudnn.benchmark = False` before constructing the model, noting the potential speed reduction.
 
-## Notes
-
-This repository contains absolute Windows paths inherited from the experimental environment. They must be changed to valid local paths before training or evaluation. The original training entry point was fixed to BraTS and the test entry point did not load a YAML; both now accept explicit `--dataset` and `--cfg` arguments so the commands above select the correct dataset branch and model configuration.
