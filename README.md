@@ -77,7 +77,7 @@ python test.py --cfg configs/pro/HK2BIDMC.yml --dataset pro --target_modality bi
 
 The evaluator selects the released test list from the dataset and modality. Use `--test-list <path>` to override it. `--data-root` sets the base directory for relative entries inside that file.
 
-The evaluator reports mean Dice, Dice standard deviation, mean ASSD, and ASSD standard deviation. It also saves prediction images. Checkpoint filenames depend on `TRAIN.SAVE_PRED_EVERY`; use the checkpoint that exists in the snapshot directory rather than assuming `model_50000.pth`.
+The evaluator reports the mean and standard deviation of Dice and ASSD across target-domain test patients. These standard deviations describe inter-patient variability and do not represent variability across repeated training runs; run-to-run variability is reported separately when applicable. The evaluator also saves prediction images. Checkpoint filenames depend on `TRAIN.SAVE_PRED_EVERY`; use the checkpoint that exists in the snapshot directory rather than assuming `model_50000.pth`.
 
 ## Configuration and random seed
 
