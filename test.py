@@ -8,6 +8,7 @@ sys.path.append(os.path.split(rootPath)[0])
 import argparse
 import scipy.io as scio
 import warnings
+from pathlib import Path
 
 from domain_adaptation.eval_UDA import eval, eval_during_train, load_checkpoint_for_evaluation
 from model.deeplabv2 import get_deeplab_v2
@@ -16,19 +17,44 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore")
 import numpy as np
 
+REPO_ROOT = Path(__file__).resolve().parent
+DEFAULT_TEST_LISTS = {
+    'CT': 'datalist/MMWHS17/test_ct.txt',
+    'MR': 'datalist/MMWHS17/test_mr.txt',
+    't2': 'datalist/BraTS2018/brats_test_t2.txt',
+    'flair': 'datalist/BraTS2018/brats_test_flair.txt',
+    'hk': 'datalist/Pro12/hk_test.txt',
+    'bidmc': 'datalist/Pro12/bidmc_test.txt',
+}
+
+
+def resolve_path(path_value, base_dir=REPO_ROOT):
+    expanded = Path(os.path.expandvars(os.path.expanduser(str(path_value))))
+    return expanded.resolve() if expanded.is_absolute() else (Path(base_dir) / expanded).resolve()
+
+
+def read_path_list(list_path, data_root):
+    with open(resolve_path(list_path), encoding='utf-8') as fp:
+        return [str(resolve_path(row.strip(), data_root)) for row in fp if row.strip()]
+
+
 def get_arguments():
     """
     Parse input arguments
     """
 
-    parser = argparse.ArgumentParser(description="Code for domain adaptation (DA) training")
-    parser.add_argument('--pretrained_model_pth', type=str,
-        # default='/mnt/workdir/fengwei/ultra_wide/DAUDA_IMAGE/mspcl/scripts/experiments/snapshots/CT2MR1/MT_CT2MR/model_4000.pth',
-     default=r"model_1500.pth",
-                        help='optional config file', )
+    parser = argparse.ArgumentParser(description="Code for domain adaptation (DA) evaluation")
+    parser.add_argument('--cfg', type=str, required=True,
+                        help='YAML config path (absolute or relative to the repository root).')
+    parser.add_argument('--pretrained_model_pth', type=str, required=True,
+                        help='Checkpoint path (absolute or relative to the repository root).')
+    parser.add_argument('--test-list', type=str, default=None,
+                        help='Optional test-list override; defaults to the released list for the modality.')
+    parser.add_argument('--data-root', type=str, default='.',
+                        help='Base directory for relative entries inside the test-list file.')
     parser.add_argument('--target_modality', type=str, default='MR',
                         help='optional modality', )
-    parser.add_argument('--num_class', type=str, default=5, help='number of classes',)
+    parser.add_argument('--num_class', type=int, default=5, help='number of classes',)
     parser.add_argument('--dataset', type=str, default='mmwhs',
                         help='optional dataset', )
     parser.add_argument('--Method', type=str, default='test',
@@ -41,28 +67,12 @@ def main():
     #LOAD ARGS
     args = get_arguments()
 
-    test_list_pth = None
+    cfg_from_file(str(resolve_path(args.cfg)))
     target_modality = args.target_modality
-
-    if target_modality == 'CT':
-        test_list_pth = '\data\datalist/test_ct.txt'
-
-    if target_modality == 'MR':
-        test_list_pth = '\data\datalist/test_mr.txt'
-
-    if target_modality == 't2':
-        test_list_pth = r'\brats_test_t2.txt'
-    if target_modality == 'flair':
-        test_list_pth =r'\brats_test_flair.txt'
-
-    if target_modality == 'hk':
-        test_list_pth = r'\data\datalist\pro12\hk_test.txt'
-    if target_modality == 'bidmc':
-        test_list_pth = r'\data\datalist\pro12\bidmc_test.txt'
-
-    with open(test_list_pth) as fp:
-        rows = fp.readlines()
-    testfile_list = [row[:-1] for row in rows]
+    if args.test_list is None and target_modality not in DEFAULT_TEST_LISTS:
+        raise ValueError('Unknown target modality; provide --test-list explicitly.')
+    test_list_pth = args.test_list or DEFAULT_TEST_LISTS[target_modality]
+    testfile_list = read_path_list(test_list_pth, resolve_path(args.data_root))
 
     model = None
     if cfg.TRAIN.MODEL == 'DeepLabv2':
@@ -70,7 +80,7 @@ def main():
         model = get_deeplab_v2(num_classes = args.num_class,multi_level=cfg.TRAIN.MULTI_LEVEL)
 
 
-    pretrained_model_pth  = args.pretrained_model_pth
+    pretrained_model_pth = str(resolve_path(args.pretrained_model_pth))
     load_checkpoint_for_evaluation(model, pretrained_model_pth)
     Method = args.Method
     print('target_modality is {},method is {}'.format(target_modality,args.Method))

@@ -13,6 +13,7 @@ import os.path as osp
 import pprint
 import random
 import warnings
+from pathlib import Path
 import numpy as np
 import yaml
 import torch
@@ -26,13 +27,37 @@ from domain_adaptation.train_UDA import train_domain_adaptation, train_senery
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore")
 
+REPO_ROOT = Path(__file__).resolve().parent
+
+
+def resolve_path(path_value, base_dir=REPO_ROOT):
+    """Resolve absolute paths as-is and repository-relative paths from REPO_ROOT."""
+    expanded = Path(os.path.expandvars(os.path.expanduser(str(path_value))))
+    return expanded.resolve() if expanded.is_absolute() else (Path(base_dir) / expanded).resolve()
+
+
+def load_config(args):
+    cfg_from_file(str(resolve_path(args.cfg)))
+    cfg.TRAIN.RESTORE_FROM = str(resolve_path(cfg.TRAIN.RESTORE_FROM))
+    cfg.EXP_ROOT_SNAPSHOT = str(resolve_path(cfg.EXP_ROOT_SNAPSHOT))
+    cfg.EXP_ROOT_LOGS = str(resolve_path(cfg.EXP_ROOT_LOGS))
+
+
+def list_path(args, dataset_name, filename):
+    return str(resolve_path(Path(args.datalist_root) / dataset_name / filename))
+
+
 def get_arguments():
     """
     Parse input arguments
     """
     parser = argparse.ArgumentParser(description="Code for domain adaptation (DA) training")
-    parser.add_argument('--cfg', type=str, default=r'\scripts\configs\ours_CT2MR.yml',
-                        help='optional config file', )
+    parser.add_argument('--cfg', type=str, required=True,
+                        help='YAML config path (absolute or relative to the repository root).')
+    parser.add_argument('--dataset', choices=['mmwhs', 'pro', 'brats'], default='mmwhs',
+                        help='Dataset-specific training entry point.')
+    parser.add_argument('--datalist-root', type=str, default='datalist',
+                        help='Directory containing MMWHS17, BraTS2018, and Pro12 list folders.')
     parser.add_argument("--random-train", action="store_true",
                         help="not fixing random seed.")
     parser.add_argument("--tensorboard", action="store_true",
@@ -43,14 +68,12 @@ def get_arguments():
 def _init_fn(worker_id):
     np.random.seed(cfg.TRAIN.RANDOM_SEED+worker_id)
 
-def main():
+def main(args):
     #LOAD ARGS
-    args = get_arguments()
     print('Called with args')
     # print(args)
 
-    assert args.cfg is not None, 'Missing cfg file'
-    cfg_from_file(args.cfg)
+    load_config(args)
 
     #auto-generate exp name if not specified
 
@@ -114,14 +137,14 @@ def main():
         raise NotImplementedError(f"Not yet supported {cfg.TRAIN.MODEL}")
 
     # DataLoaders
-    train_mr_data_pth = '\data\datalist/train_mr.txt'
-    train_ct_data_pth = '\data\datalist/train_ct.txt'
-    train_mr_gt_pth = '\data\datalist/train_mr_gt.txt'
-    train_ct_gt_pth = '\data\datalist/train_ct_gt.txt'
-    val_mr_data_pth   = '/data/datalist/val_mr.txt'
-    val_ct_data_pth   = '/data/datalist/val_ct.txt'
-    val_mr_gt_pth     = '/data/datalist/val_mr_gt.txt'
-    val_ct_gt_pth     = '/data/datalist/val_ct_gt.txt'
+    train_mr_data_pth = list_path(args, 'MMWHS17', 'train_mr.txt')
+    train_ct_data_pth = list_path(args, 'MMWHS17', 'train_ct.txt')
+    train_mr_gt_pth = list_path(args, 'MMWHS17', 'train_mr_gt.txt')
+    train_ct_gt_pth = list_path(args, 'MMWHS17', 'train_ct_gt.txt')
+    val_mr_data_pth = list_path(args, 'MMWHS17', 'val_mr.txt')
+    val_ct_data_pth = list_path(args, 'MMWHS17', 'val_ct.txt')
+    val_mr_gt_pth = list_path(args, 'MMWHS17', 'val_mr_gt.txt')
+    val_ct_gt_pth = list_path(args, 'MMWHS17', 'val_ct_gt.txt')
 
 
     transforms = None
@@ -215,14 +238,12 @@ def main():
     train_domain_adaptation(model,strain_loader,trgtrain_loader,sval_loader,cfg)
 
     #train_senery(model, strain_loader, sval_loader, trgtrain_loader, cfg)
-def main_pro():
+def main_pro(args):
     #LOAD ARGS
-    args = get_arguments()
     print('Called with args')
     # print(args)
 
-    assert args.cfg is not None, 'Missing cfg file'
-    cfg_from_file(args.cfg)
+    load_config(args)
 
     #auto-generate exp name if not specified
 
@@ -284,10 +305,10 @@ def main_pro():
         raise NotImplementedError(f"Not yet supported {cfg.TRAIN.MODEL}")
 
     # DataLoaders for brats
-    train_hk_data_pth = r'\data\datalist\pro12\train_hk.txt'
-    train_bidmc_data_pth = r'\data\datalist\pro12\train_bidmc.txt'
-    train_hk_gt_pth = r'\data\datalist\pro12\train_hk_gt.txt'
-    train_bidmc_gt_pth = r'\data\datalist\pro12\train_bidmc_gt.txt'
+    train_hk_data_pth = list_path(args, 'Pro12', 'train_hk.txt')
+    train_bidmc_data_pth = list_path(args, 'Pro12', 'train_bidmc.txt')
+    train_hk_gt_pth = list_path(args, 'Pro12', 'train_hk_gt.txt')
+    train_bidmc_gt_pth = list_path(args, 'Pro12', 'train_bidmc_gt.txt')
 
 
     transforms = None
@@ -350,14 +371,12 @@ def main_pro():
 
     # UDA TRAINING
     train_domain_adaptation(model,strain_loader,trgtrain_loader,sval_loader,cfg)
-def main_brats():
+def main_brats(args):
     #LOAD ARGS
-    args = get_arguments()
     print('Called with args')
     # print(args)
 
-    assert args.cfg is not None, 'Missing cfg file'
-    cfg_from_file(args.cfg)
+    load_config(args)
 
     #auto-generate exp name if not specified
 
@@ -420,23 +439,20 @@ def main_brats():
 
     # DataLoaders for brats
     if cfg.SOURCE == 't2':
-        train_t2_data_pth = r"\brats18\npy\brats_train_t2.txt"
-        train_tar_data_pth = r"\brats18\npy\brats_train_flair.txt"
-
-        train_t2_gt_pth = r"\brats18\npy\brats_train_t2_gt.txt"
-        train_tar_gt_pth = r"\brats18\npy\brats_train_flair_gt.txt"
+        train_t2_data_pth = list_path(args, 'BraTS2018', 'brats_train_t2.txt')
+        train_tar_data_pth = list_path(args, 'BraTS2018', 'brats_train_flair.txt')
+        train_t2_gt_pth = list_path(args, 'BraTS2018', 'brats_train_t2_gt.txt')
+        train_tar_gt_pth = list_path(args, 'BraTS2018', 'brats_train_flair_gt.txt')
     elif cfg.SOURCE == 'flair':
-        train_t2_data_pth = r"\brats18\npy\brats_train_flair.txt"
+        train_t2_data_pth = list_path(args, 'BraTS2018', 'brats_train_flair.txt')
+        train_tar_data_pth = list_path(args, 'BraTS2018', 'brats_train_t2.txt')
+        train_t2_gt_pth = list_path(args, 'BraTS2018', 'brats_train_flair_gt.txt')
+        train_tar_gt_pth = list_path(args, 'BraTS2018', 'brats_train_t2_gt.txt')
 
-        train_tar_data_pth = r"\brats18\npy\brats_train_t2.txt"
-
-        train_t2_gt_pth = r"\brats18\npy\brats_train_flair_gt.txt"
-        train_tar_gt_pth = r"\brats18\npy\brats_train_t2_gt.txt"
-
-    val_t2_data_pth = r'\data\datalist\brats_val_t2.txt'
-    val_tar_data_pth = r'\data\datalist\brats_val_t1ce.txt'
-    val_t2_gt_pth = r'\data\datalist\brats_val_t2_gt.txt'
-    val_tar_gt_pth = r'\data\datalist\brats_val_t1ce_gt.txt'
+    val_t2_data_pth = list_path(args, 'BraTS2018', 'brats_val_t2.txt')
+    val_tar_data_pth = list_path(args, 'BraTS2018', 'brats_val_flair.txt')
+    val_t2_gt_pth = list_path(args, 'BraTS2018', 'brats_val_t2_gt.txt')
+    val_tar_gt_pth = list_path(args, 'BraTS2018', 'brats_val_flair_gt.txt')
 
 
 
@@ -501,7 +517,11 @@ def main_brats():
     #train_senery(model, strain_loader, sval_loader, trgtrain_loader, cfg)
 
 if __name__ == '__main__':
-
-    main()
-    #main_pro()
-    #main_brats()
+    args = get_arguments()
+    os.chdir(REPO_ROOT)
+    if args.dataset == 'mmwhs':
+        main(args)
+    elif args.dataset == 'pro':
+        main_pro(args)
+    else:
+        main_brats(args)
