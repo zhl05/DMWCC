@@ -44,7 +44,7 @@ The fixed data lists used in the experiments are provided in `datalist/Pro12/`, 
 
 For Pro12, the released files record the fixed 10/2 patient-level split. The HK training list contains `hk_0` through `hk_9`, with `Case48` and `Case49` in the test list. The BIDMC training list contains `bidmc_0` through `bidmc_9`, with `Case11` and `Case12` in the test list.
 
-The MMWHS lists currently in `data/datalist/` contain 2,304 training slices, 576 validation slices, and 4 test-volume entries per modality. Keep splits at the volume level to prevent slices from one subject appearing in both training and testing sets.
+The MMWHS lists currently in `datalist/MMWHS17/` contain 2,304 training slices, 576 validation slices, and 4 test-volume entries per modality. Keep splits at the volume level to prevent slices from one subject appearing in both training and testing sets.
 
 ## Training
 
