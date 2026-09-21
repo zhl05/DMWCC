@@ -28,7 +28,7 @@ The released lists are selected from `datalist/MMWHS17/`, `datalist/BraTS2018/`,
 
 The list-generation utilities no longer contain local path constants. Use `dataset/create_datalist.py --data-dir ... --label-dir ... --image-list ... --label-list ...` for paired `.npy` lists and `dataset/create_test_datalist.py --data-dir ... --data-list ...` for `.npz` test lists. Add `--relative-to <base-directory>` to write portable relative paths.
 
-The source and target datasets share a common loader interface, so the target-domain label is returned with each target sample but ignored by the training routine. Only source-domain labels contribute to the supervised segmentation loss. Training runs for the fixed number of iterations specified by `TRAIN.MAX_ITERS`, and target-domain labels are not used for hyperparameter tuning, early stopping, or checkpoint selection; they are used only for final evaluation.
+The source and target datasets share a common loader interface, so the target-domain label is returned with each target sample but ignored by the training routine. Only source-domain labels contribute to the supervised segmentation loss. Target-domain labels were not used for hyperparameter tuning, early stopping, or checkpoint selection, and were used only for final evaluation.
 
 ## Dataset splits and preprocessing
 
