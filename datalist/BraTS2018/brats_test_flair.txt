@@ -1,0 +1,4 @@
+data/brats/testflair/flair_27.npz
+data/brats/testflair/flair_41.npz
+data/brats/testflair/flair_45.npz
+data/brats/testflair/flair_56.npz

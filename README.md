@@ -38,6 +38,12 @@ BraTS and Pro12 list paths are currently declared in `scripts/train.py`; edit th
 
 **BraTS2018 split clarification.** Dataset partitioning was performed at the patient level before 2D slice extraction. Specifically, **16 patients were used for training, while the remaining 4 patients constituted the shared validation/test set**. The same patient-level partition was applied to both T2 and FLAIR, and all slices from the same patient remained within the same subset. During preprocessing, slices with entirely empty segmentation labels were removed from both training lists. After filtering, the training lists contained **1,746 FLAIR slices and 1,569 T2 slices**, while the 4 validation/test patient volumes provided **512 slices per modality**. The different training slice counts resulted from empty-label removal and did not affect the patient-level partition.
 
+### Fixed data lists
+
+The fixed data lists used in the experiments are provided in `datalist/Pro12/`, `datalist/BraTS2018/`, and `datalist/MMWHS17/`. All entries use paths relative to the repository root. Training image and label lists are kept in separate files and retain their original line order.
+
+For Pro12, the released files record the fixed 10/2 patient-level split. The HK training list contains `hk_0` through `hk_9`, with `Case48` and `Case49` in the test list. The BIDMC training list contains `bidmc_0` through `bidmc_9`, with `Case11` and `Case12` in the test list.
+
 The MMWHS lists currently in `data/datalist/` contain 2,304 training slices, 576 validation slices, and 4 test-volume entries per modality. Keep splits at the volume level to prevent slices from one subject appearing in both training and testing sets.
 
 ## Training
