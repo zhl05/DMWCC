@@ -33,8 +33,10 @@ BraTS and Pro12 list paths are currently declared in `scripts/train.py`; edit th
 | Dataset | Adaptation tasks | Split used in the manuscript | Preprocessing |
 | --- | --- | --- | --- |
 | MMWHS17 | CT to MRI; MRI to CT | 20 unpaired CT and 20 unpaired MRI volumes; 16 volumes per modality for training and 4 for testing | SIFA v2 preprocessed data; 2D slices |
-| BraTS2018 | T2 to FLAIR; FLAIR to T2 | 1,746 cases per modality; 512 held out for validation/testing | central brain crop to 128 x 128 x 128, then 128 axial slices |
+| BraTS2018 | T2 to FLAIR; FLAIR to T2 | Patient-level split performed before 2D slice extraction; after preprocessing, each modality contains 1,746 extracted 2D axial slices, of which 512 slices belong to the held-out validation/test patients | central brain crop to 128 x 128 x 128, followed by axial 2D slice extraction |
 | Pro12 | HK to BIDMC; BIDMC to HK | 12 cases per site; seeded random selection of 10 training and 2 testing cases | axial slices from NIfTI volumes, resized to 256 x 256 |
+
+**BraTS2018 split clarification.** The values **1,746** and **512** are numbers of extracted **2D axial slices**, not numbers of patient volumes. The T2 and FLAIR modalities use the same patient-level partition. Patient assignment is completed before 2D slice extraction, and all slices from a given patient remain in the same subset, preventing patient-level leakage between training and evaluation. The value 512 denotes the combined number of slices belonging to the held-out validation and test patients. The exact patient-level training, validation, and test counts and subject identifiers should be reported from the fixed split files used in the experiments; they are not encoded by the slice-count values themselves.
 
 The MMWHS lists currently in `data/datalist/` contain 2,304 training slices, 576 validation slices, and 4 test-volume entries per modality. Keep splits at the volume level to prevent slices from one subject appearing in both training and testing sets.
 
