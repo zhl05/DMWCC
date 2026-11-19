@@ -1,0 +1,4 @@
+data/data_np/test_ct/ct_1003.npz
+data/data_np/test_ct/ct_1008.npz
+data/data_np/test_ct/ct_1014.npz
+data/data_np/test_ct/ct_1019.npz

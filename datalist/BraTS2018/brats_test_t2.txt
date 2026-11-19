@@ -1,0 +1,4 @@
+data/brats/testt2/t2_27.npz
+data/brats/testt2/t2_41.npz
+data/brats/testt2/t2_45.npz
+data/brats/testt2/t2_56.npz

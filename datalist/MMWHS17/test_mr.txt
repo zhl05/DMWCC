@@ -1,0 +1,4 @@
+data/data_np/test_mr/mr_1007.npz
+data/data_np/test_mr/mr_1009.npz
+data/data_np/test_mr/mr_1018.npz
+data/data_np/test_mr/mr_1019.npz
