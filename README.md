@@ -89,4 +89,4 @@ The default random seed is `1234` (`TRAIN.RANDOM_SEED`). Training seeds Python `
 
 The six task configurations referenced above are provided in `configs/`, and environment dependencies are listed in `requirements.txt`. Place pretrained weights at the location recorded in the selected configuration.
 
-The public release provides data lists, dataset utilities, task configurations and dependency requirements. The complete training and evaluation implementation is maintained privately.
+The public release provides data lists, dataset utilities, task configurations and dependency requirements. 
